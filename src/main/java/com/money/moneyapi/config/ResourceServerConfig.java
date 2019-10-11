@@ -22,41 +22,38 @@ import org.springframework.security.oauth2.provider.expression.OAuth2MethodSecur
 @EnableResourceServer
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
+
+	@Autowired
+	private UserDetailsService userDetailsService;
 	
-    @Autowired
-    private UserDetailsService userDetailsService;
-    
-    
 	@Autowired
 	public void configure(AuthenticationManagerBuilder auth) throws Exception {
 		auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
-
 	}
-
-	@Bean
-	public PasswordEncoder passwordEncoder() {
-		return new BCryptPasswordEncoder();
-	}
-
+	
 	@Override
 	public void configure(HttpSecurity http) throws Exception {
-		http.authorizeRequests().antMatchers("/categorias").permitAll() // permitidos para todos acessarem
-				.anyRequest().authenticated() // todas as requisições devem estar autenticadas
-				.and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Não tem sessão na
-																									// aplicação
-				.and().csrf().disable(); // desabilita o javascript injection da aplicação
+		http.authorizeRequests()
+				.antMatchers("/categorias").permitAll()
+				.anyRequest().authenticated()
+				.and()
+			.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
+			.csrf().disable();
 	}
-
+	
 	@Override
 	public void configure(ResourceServerSecurityConfigurer resources) throws Exception {
 		resources.stateless(true);
 	}
 	
 	@Bean
-	public MethodSecurityExpressionHandler creaeExpressionHandler() {
-		return new OAuth2MethodSecurityExpressionHandler();
+	public PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
 	}
 	
-	
+	@Bean
+	public MethodSecurityExpressionHandler createExpressionHandler() {
+		return new OAuth2MethodSecurityExpressionHandler();
+	}
 
 }
